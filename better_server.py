@@ -1,18 +1,26 @@
-# code from https://youtu.be/hFNZ6kdBgO0
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from socket import *
 
-class Serv(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == '/':
-            self.path = '/file1.txt'
-        try:
-            file_to_open = open(self.path[1:]).read()
-            self.send_response(200)
-        except:
-            file_to_open = "File not found"
-            self.send_response(404)
-        self.end_headers()
-        self.wfile.write(bytes(file_to_open, 'utf-8'))
+message = "HTTP/1.1 200 OK\r\n"\
+"Content-Type: text/plain\r\n"\
+"Content-Length: 6\r\n"\
+"Connection: close\r\n"\
+"\r\n"\
+"Hello!"
 
-httpd = HTTPServer(('localhost', 8080), Serv)
-httpd.serve_forever()
+serverPort = 12000
+serverSocket = socket()
+serverSocket.bind(('', serverPort))
+serverSocket.listen()
+
+while True:
+    connectSocket, info = serverSocket.accept()
+    print(connectSocket)
+    buffer = b""
+    while True:
+        data = connectSocket.recv(10)
+        buffer+= data
+        if  b"\r\n\r\n" in buffer:
+            break
+    print(buffer.decode("ISO-8859-1"))
+    connectSocket.sendall(message.encode("ISO-8859-1"))
+    connectSocket.close()
